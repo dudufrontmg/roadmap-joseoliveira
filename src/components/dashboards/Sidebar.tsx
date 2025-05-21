@@ -5,7 +5,7 @@ import { ProjectStage, ProjectCode, FilterState, FilterOptions } from '../../typ
 import { isActivityInStage } from '../../utils/activityUtils';
 import { formatProjectCodeDisplay } from '../../utils/projectUtils';
 
-const PROJECT_STAGES = ['todas', 'Parametrização', 'PréTAF', 'TAF', 'TAC', 'Técnico Campo'];
+const PROJECT_STAGES = ['todas', 'Parametrização', 'PTAF', 'TAF', 'Técnico Campo', 'TAC'];
 
 interface SidebarProps {
   filters: FilterOptions;
@@ -62,7 +62,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <div className="w-64 bg-white shadow-lg min-h-screen">
       <div className="sticky top-0 p-4 space-y-4">
         <div className="flex items-center gap-2 mb-6">
-          <Filter className="w-5 h-5 text-blue-600" />
+          <Filter className="w-5 h-5 text-gray-900" />
           <h2 className="text-lg font-semibold text-gray-900">Filtros</h2>
         </div>
 

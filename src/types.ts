@@ -99,10 +99,10 @@ export type ActivityCategory =
 export type ProjectStage = 
   | 'todas'
   | 'Parametrização'
-  | 'PréTAF'
+  | 'PTAF'
   | 'TAF'
-  | 'TAC'
-  | 'Técnico Campo';
+  | 'Técnico Campo'
+  | 'TAC';
 
 // Códigos para o dropdown de projeto
 export interface ProjectCode {

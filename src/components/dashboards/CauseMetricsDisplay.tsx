@@ -20,7 +20,7 @@ export const CauseMetricsDisplay: React.FC<CauseMetricsDisplayProps> = ({ metric
         <Clock className="w-5 h-5 text-gray-600" />
         <h3 className="text-sm font-medium text-gray-600">{title}</h3>
       </div>
-      <p className="text-2xl font-bold mt-2">
+      <p className="text-2xl font-bold text-gray-900 mt-2">
         {format === 'hours' ? formatHours(Number(value)) :
          format === 'percentage' ? formatPercentage(Number(value)) :
          value}
