@@ -55,18 +55,12 @@ export const formatProjectCodeDisplay = (codes: string[]): ProjectCode[] => {
     return [];
   }
 
-  console.log('Received codes:', codes);
-  
-  const formattedCodes = codes
-    .filter(Boolean) // Remove null/undefined/empty values
+  return codes
+    .filter(Boolean)
     .map(code => {
       const original = code.toString().trim();
-      const display = PROJECT_DISPLAY_NAMES[original] || original;
-      console.log('Formatting code:', { original, display });
+      const display = PROJECT_DISPLAY_NAMES[original] || extractProjectNumber(original);
       return { original, display };
     })
     .sort((a, b) => compareProjectCodes(a.original, b.original));
-
-  console.log('Formatted codes:', formattedCodes);
-  return formattedCodes;
 };

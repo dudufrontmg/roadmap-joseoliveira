@@ -5,6 +5,8 @@ import { ProjectStage, ProjectCode, FilterState, FilterOptions } from '../../typ
 import { isActivityInStage } from '../../utils/activityUtils';
 import { formatProjectCodeDisplay } from '../../utils/projectUtils';
 
+const PROJECT_STAGES = ['todas', 'Parametrização', 'PréTAF', 'TAF', 'TAC', 'Técnico Campo'];
+
 interface SidebarProps {
   filters: FilterOptions;
   selectedFilters: FilterState;
@@ -13,15 +15,6 @@ interface SidebarProps {
   periodoFim: string;
   onPeriodoChange: (tipo: 'inicio' | 'fim', value: string) => void;
 }
-
-const PROJECT_STAGES: ProjectStage[] = [
-  'todas',
-  'Parametrização',
-  'PréTAF',
-  'TAF',
-  'TAC',
-  'Técnico Campo'
-];
 
 export const Sidebar: React.FC<SidebarProps> = ({
   filters,
@@ -32,10 +25,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onPeriodoChange,
 }) => {
   const formattedProjetos = useMemo(() => {
-    console.log('Formatting projects:', filters.codigoProjeto);
-    const formatted = formatProjectCodeDisplay(filters.codigoProjeto);
-    console.log('Formatted projects:', formatted);
-    return formatted;
+    return formatProjectCodeDisplay(filters.codigoProjeto);
   }, [filters.codigoProjeto]);
 
   const filteredAtividades = useMemo(() => {
@@ -63,18 +53,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const handleProjectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    console.log('Project selected:', e.target.value);
     onFilterChange('codigoProjeto', e.target.value);
   };
 
-  const isProjectSelected = selectedFilters.codigoProjeto !== '';
+  const isProjectSelected = Boolean(selectedFilters.codigoProjeto?.trim());
 
   return (
     <div className="w-64 bg-white shadow-lg min-h-screen">
       <div className="sticky top-0 p-4 space-y-4">
         <div className="flex items-center gap-2 mb-6">
           <Filter className="w-5 h-5 text-blue-600" />
-          <h2 className="text-lg font-semibold">Filtros</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Filtros</h2>
         </div>
 
         <div className="space-y-4">
@@ -83,7 +72,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               Código Projeto
             </label>
             <select
-              className="w-full border rounded-md p-2 bg-white hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 transition-colors"
+              className="w-full border rounded-md p-2 bg-white text-gray-900 hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 transition-colors"
               value={selectedFilters.codigoProjeto}
               onChange={handleProjectChange}
             >
@@ -97,15 +86,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className={clsx(
+              "block text-sm font-medium mb-1",
+              isProjectSelected ? "text-gray-700" : "text-gray-400"
+            )}>
               Etapa do Projeto
             </label>
             <select
               className={clsx(
-                "w-full border rounded-md p-2 bg-white transition-colors",
+                "w-full border rounded-md p-2 transition-colors",
                 isProjectSelected
-                  ? "hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                  : "bg-gray-50 text-gray-500 cursor-not-allowed"
+                  ? "bg-white hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-gray-900"
+                  : "bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed opacity-60"
               )}
               value={selectedFilters.etapaProjeto}
               onChange={(e) => onFilterChange('etapaProjeto', e.target.value as ProjectStage)}
@@ -121,17 +113,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className={clsx(
+              "block text-sm font-medium mb-1",
+              isProjectSelected ? "text-gray-700" : "text-gray-400"
+            )}>
               Atividade C&C
             </label>
             <select
               multiple
               size={5}
               className={clsx(
-                "w-full border rounded-md p-2 bg-white transition-colors",
+                "w-full border rounded-md p-2 transition-colors",
                 isProjectSelected
-                  ? "hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                  : "bg-gray-50 text-gray-500 cursor-not-allowed"
+                  ? "bg-white hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-gray-900"
+                  : "bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed opacity-60"
               )}
               value={selectedFilters.atividade}
               onChange={handleAtividadeChange}
@@ -147,17 +142,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className={clsx(
+              "block text-sm font-medium mb-1",
+              isProjectSelected ? "text-gray-700" : "text-gray-400"
+            )}>
               Classificação de Horas
             </label>
             <select
               multiple
               size={5}
               className={clsx(
-                "w-full border rounded-md p-2 bg-white transition-colors",
+                "w-full border rounded-md p-2 transition-colors",
                 isProjectSelected
-                  ? "hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                  : "bg-gray-50 text-gray-500 cursor-not-allowed"
+                  ? "bg-white hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-gray-900"
+                  : "bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed opacity-60"
               )}
               value={selectedFilters.tipoAtividade}
               onChange={handleTipoAtividadeChange}
@@ -172,17 +170,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className={clsx(
+              "block text-sm font-medium mb-1",
+              isProjectSelected ? "text-gray-700" : "text-gray-400"
+            )}>
               Período
             </label>
             <div className="space-y-2">
               <input
                 type="month"
                 className={clsx(
-                  "w-full border rounded-md p-2 bg-white transition-colors",
+                  "w-full border rounded-md p-2 transition-colors",
                   isProjectSelected
-                    ? "hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                    : "bg-gray-50 text-gray-500 cursor-not-allowed"
+                    ? "bg-white hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-gray-900"
+                    : "bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed opacity-60"
                 )}
                 value={periodoInicio}
                 onChange={(e) => onPeriodoChange('inicio', e.target.value)}
@@ -191,10 +192,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <input
                 type="month"
                 className={clsx(
-                  "w-full border rounded-md p-2 bg-white transition-colors",
+                  "w-full border rounded-md p-2 transition-colors",
                   isProjectSelected
-                    ? "hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                    : "bg-gray-50 text-gray-500 cursor-not-allowed"
+                    ? "bg-white hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-gray-900"
+                    : "bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed opacity-60"
                 )}
                 value={periodoFim}
                 onChange={(e) => onPeriodoChange('fim', e.target.value)}
@@ -204,15 +205,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className={clsx(
+              "block text-sm font-medium mb-1",
+              isProjectSelected ? "text-gray-700" : "text-gray-400"
+            )}>
               Classificação de Causa
             </label>
             <select
               className={clsx(
-                "w-full border rounded-md p-2 bg-white transition-colors",
+                "w-full border rounded-md p-2 transition-colors",
                 isProjectSelected
-                  ? "hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-                  : "bg-gray-50 text-gray-500 cursor-not-allowed"
+                  ? "bg-white hover:border-blue-500 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-gray-900"
+                  : "bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed opacity-60"
               )}
               value={selectedFilters.classificacaoCausa}
               onChange={(e) => onFilterChange('classificacaoCausa', e.target.value)}

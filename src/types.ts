@@ -1,17 +1,27 @@
-export interface ProjectData {
+// Dados vindos de Projetos_em_Horas.xlsx
+export interface ProjetoExcelData {
+  'Cod Projeto': string;
+  'Descrição do Projeto': string;
+  'Descrição do Item': string;
+  'Hs Orçadas': number;
+  'Hs Programadas': number;
+  'Hs Ajustadas': number;
+  'Hs Executadas': number;
+  'Hs Saldo': number;
+}
+
+// Dados vindos de Horas_Detalhadas.xlsx
+export interface HorasDetalhadasData {
   'Código do Projeto': string;
+  'Ano-Mês': string;
+  'Data Apontamento': string;
   'Descrição da Atividade': string;
   'Descrição Tipo Atividade': string;
-  periodo: string;
-  'Horas Orçadas': number;
-  'Horas Programadas': number;
-  'Horas Ajustadas': number;
-  'Horas Executadas': number;
-  'Saldo de Horas': number;
-  'Horas Improdutivas': number;
+  'Total Horas': string;
   'Horas Decimal': number;
 }
 
+// Filtros selecionados pelo usuário
 export interface FilterState {
   codigoProjeto: string;
   etapaProjeto: ProjectStage;
@@ -22,6 +32,7 @@ export interface FilterState {
   classificacaoCausa: string;
 }
 
+// Valores disponíveis para filtros
 export interface FilterOptions {
   codigoProjeto: string[];
   atividade: string[];
@@ -29,6 +40,7 @@ export interface FilterOptions {
   classificacaoCausa: string[];
 }
 
+// Dados das causas
 export interface CauseData {
   CODIGOS: string;
   'ETAPA PROJETO': string;
@@ -46,6 +58,7 @@ export interface CauseData {
   'DIF HORA TOT': number;
 }
 
+// Dados da tabela de causas
 export interface CauseTableData {
   id: number;
   description: string;
@@ -59,18 +72,21 @@ export interface CauseTableRow {
   MOTIVOS: string;
 }
 
+// Gráfico de causas
 export interface CauseChartData {
   name: string;
   horas: number;
   variacao: number;
 }
 
+// Métricas das causas
 export interface CauseMetrics {
   etapaSelecionada: string;
   variacao: number;
   diferencaHoras: number;
 }
 
+// Categorias e etapas
 export type ActivityCategory = 
   | 'Visita Técnica'
   | 'Parametrização'
@@ -88,6 +104,7 @@ export type ProjectStage =
   | 'TAC'
   | 'Técnico Campo';
 
+// Códigos para o dropdown de projeto
 export interface ProjectCode {
   original: string;
   display: string;

@@ -6,16 +6,26 @@ import { MetricsDisplay } from '../components/dashboards/MetricsDisplay';
 import { Charts } from '../components/dashboards/Charts';
 import { CauseMetricsDisplay } from '../components/dashboards/CauseMetricsDisplay';
 import { CauseChart } from '../components/dashboards/CauseChart';
-import type { FilterState, ProjectData, ProjectStage, CauseData, CauseTableRow, CauseTableData, FilterOptions } from '../types';
+import type { 
+  FilterState, 
+  ProjectStage, 
+  CauseData, 
+  CauseTableRow, 
+  CauseTableData, 
+  FilterOptions,
+  ProjetoExcelData,
+  HorasDetalhadasData 
+} from '../types';
 import { categorizarTipoAtividade, isHoraImprodutiva, mapActivityToCategory, isActivityInStage } from '../utils/activityUtils';
 import { parseExcelDate, isDateInRange } from '../utils/dateUtils';
 import { startOfMonth, endOfMonth } from 'date-fns';
 import { loadCauseData, getAvailableCauseStages, getCauseChartData, calculateCauseMetrics, getCauseTableData } from '../utils/causeUtils';
+import { extractProjectNumber } from '../utils/projectUtils';
 
 export const Dashboard = () => {
   const location = useLocation();
-  const [projetosData, setProjetosData] = useState<ProjectData[]>([]);
-  const [horasData, setHorasData] = useState<any[]>([]);
+  const [projetosData, setProjetosData] = useState<ProjetoExcelData[]>([]);
+  const [horasData, setHorasData] = useState<HorasDetalhadasData[]>([]);
   const [causeData, setCauseData] = useState<CauseData[]>([]);
   const [causeTableData, setCauseTableData] = useState<CauseTableRow[]>([]);
   const [dateRange, setDateRange] = useState<{ min: string; max: string }>({ min: '', max: '' });
@@ -100,8 +110,8 @@ export const Dashboard = () => {
         const horasJson = utils.sheet_to_json(horasSheet, { raw: true });
 
         // Set data
-        setProjetosData(projetosJson as ProjectData[]);
-        setHorasData(horasJson);
+        setProjetosData(projetosJson as ProjetoExcelData[]);
+        setHorasData(horasJson as HorasDetalhadasData[]);
 
         // Extract project codes
         const projetosCodigos = new Set(projetosJson
@@ -169,30 +179,43 @@ export const Dashboard = () => {
   useEffect(() => {
     if (!filters.codigoProjeto || !projetosData.length || !horasData.length) return;
 
-    // Calculate metrics
-    const filteredData = projetosData.filter(row => 
-      row['Cod Projeto']?.toString().trim() === filters.codigoProjeto
-    );
+    // Calculate metrics using extractProjectNumber for comparison
+    const filteredData = projetosData.filter(row => {
+      const excelCode = extractProjectNumber(row['Cod Projeto']?.toString().trim() || '');
+      const filtroCode = extractProjectNumber(filters.codigoProjeto);
+      return excelCode === filtroCode;
+    });
 
     const metrics = {
-      horasVendidas: filteredData.reduce((sum, row) => sum + (row['Horas Orçadas'] || 0), 0),
-      horasPlanejadas: filteredData.reduce((sum, row) => sum + (row['Horas Programadas'] || 0), 0),
-      horasConsumidas: filteredData.reduce((sum, row) => sum + (row['Horas Executadas'] || 0), 0),
-      horasImprodutivas: filteredData.reduce((sum, row) => sum + (row['Horas Improdutivas'] || 0), 0),
-      saldoHoras: filteredData.reduce((sum, row) => sum + (row['Saldo de Horas'] || 0), 0),
+      horasVendidas: filteredData.reduce((sum, row) => sum + (row['Hs Orçadas'] || 0), 0),
+      horasPlanejadas: filteredData.reduce((sum, row) => sum + (row['Hs Programadas'] || 0), 0),
+      horasConsumidas: filteredData.reduce((sum, row) => sum + (row['Hs Executadas'] || 0), 0),
+      horasImprodutivas: 0, // Será calculado a partir dos dados detalhados
+      saldoHoras: filteredData.reduce((sum, row) => sum + (row['Hs Saldo'] || 0), 0),
     };
 
+    // Calcular horas improdutivas dos dados detalhados
+    const horasImprodutivas = horasData
+      .filter(row => {
+        const matchesProject = extractProjectNumber(row['Código do Projeto']?.toString().trim() || '') === 
+                             extractProjectNumber(filters.codigoProjeto);
+        const isImprodutiva = isHoraImprodutiva(categorizarTipoAtividade(row['Descrição Tipo Atividade']));
+        return matchesProject && isImprodutiva;
+      })
+      .reduce((sum, row) => sum + (Number(row['Horas Decimal']) || 0), 0);
+
+    metrics.horasImprodutivas = horasImprodutivas;
     setMetrics(metrics);
 
     // Calculate chart data
     const chartData = filteredData.map(row => ({
-      name: row['Descrição da Atividade'],
-      Vendido: row['Horas Orçadas'] || 0,
-      Planejado: row['Horas Programadas'] || 0,
-      Consumido: row['Horas Executadas'] || 0,
-      Improdutivo: row['Horas Improdutivas'] || 0,
-      'Variação PlanXCons': row['Horas Programadas'] ? 
-        ((row['Horas Executadas'] - row['Horas Programadas']) / row['Horas Programadas']) * 100 : 0
+      name: row['Descrição do Item'],
+      Vendido: row['Hs Orçadas'] || 0,
+      Planejado: row['Hs Programadas'] || 0,
+      Consumido: row['Hs Executadas'] || 0,
+      Improdutivo: 0, // Será calculado separadamente
+      'Variação PlanXCons': row['Hs Programadas'] ? 
+        ((row['Hs Executadas'] - row['Hs Programadas']) / row['Hs Programadas']) * 100 : 0
     }));
 
     setAtividadeData(chartData);
@@ -201,13 +224,14 @@ export const Dashboard = () => {
     if (filters.classificacaoCausa) {
       const causeChartData = getCauseChartData(causeData, filters.codigoProjeto, filters.classificacaoCausa);
       const causeMetrics = calculateCauseMetrics(chartData, filters.classificacaoCausa);
-      const causeTableData = getCauseTableData(causeData, causeTableData, filters.codigoProjeto, filters.classificacaoCausa);
+      const updatedTableData = getCauseTableData(causeData, causeTableData, filters.codigoProjeto, filters.classificacaoCausa);
 
       setCauseChartData(causeChartData);
       setCauseMetrics(causeMetrics);
+      setCauseTableData(updatedTableData);
     }
 
-  }, [filters, projetosData, horasData, causeData, causeTableData]);
+  }, [filters, projetosData, horasData, causeData]);
 
   const handleFilterChange = (filterType: string, value: string | string[] | ProjectStage) => {
     setFilters(prev => ({
@@ -218,7 +242,11 @@ export const Dashboard = () => {
     if (filterType === 'codigoProjeto' && typeof value === 'string') {
       const projectActivities = Array.from(new Set(
         horasData
-          .filter(row => row['Código do Projeto']?.toString().trim() === value)
+          .filter(row => {
+            const rowProjectCode = extractProjectNumber(row['Código do Projeto']?.toString().trim() || '');
+            const selectedProjectCode = extractProjectNumber(value);
+            return rowProjectCode === selectedProjectCode;
+          })
           .map(row => row['Descrição da Atividade']?.toString().trim())
           .filter(Boolean)
       )).sort();
