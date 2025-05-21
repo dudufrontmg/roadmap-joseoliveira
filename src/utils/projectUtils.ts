@@ -22,8 +22,17 @@ const PROJECT_DISPLAY_NAMES: { [key: string]: string } = {
 };
 
 export const extractProjectNumber = (projectCode: string): string => {
-  const match = projectCode.match(/\d+(?:_\d+)+/);
-  return match ? match[0] : projectCode;
+  if (!projectCode) return '';
+  
+  const cleanCode = projectCode.toString().trim();
+  
+  // First try to find the XX_XXX pattern
+  const match = cleanCode.match(/\d+_\d+/);
+  if (match) return match[0];
+  
+  // If not found, try to find just numbers
+  const numberMatch = cleanCode.match(/\d+/);
+  return numberMatch ? numberMatch[0] : cleanCode;
 };
 
 export const compareProjectCodes = (a: string, b: string): number => {
@@ -41,10 +50,23 @@ export const compareProjectCodes = (a: string, b: string): number => {
 };
 
 export const formatProjectCodeDisplay = (codes: string[]): ProjectCode[] => {
-  return codes
-    .map(code => ({
-      original: code,
-      display: PROJECT_DISPLAY_NAMES[code] || code
-    }))
-    .sort((a, b) => compareProjectCodes(a.display, b.display));
+  if (!Array.isArray(codes)) {
+    console.error('formatProjectCodeDisplay: codes is not an array', codes);
+    return [];
+  }
+
+  console.log('Received codes:', codes);
+  
+  const formattedCodes = codes
+    .filter(Boolean) // Remove null/undefined/empty values
+    .map(code => {
+      const original = code.toString().trim();
+      const display = PROJECT_DISPLAY_NAMES[original] || original;
+      console.log('Formatting code:', { original, display });
+      return { original, display };
+    })
+    .sort((a, b) => compareProjectCodes(a.original, b.original));
+
+  console.log('Formatted codes:', formattedCodes);
+  return formattedCodes;
 };

@@ -22,6 +22,13 @@ export interface FilterState {
   classificacaoCausa: string;
 }
 
+export interface FilterOptions {
+  codigoProjeto: string[];
+  atividade: string[];
+  tipoAtividade: string[];
+  classificacaoCausa: string[];
+}
+
 export interface CauseData {
   CODIGOS: string;
   'ETAPA PROJETO': string;
